@@ -1,65 +1,49 @@
-/*!
- * @brief Read and collect data from sensors to send to the dashboard and car
- * 
- * Whenever checkSensors gets called, this class reads data from every sensor 
- * that is ready to send data. It then creates a SensorData object for each 
- * piece of data and sends it to the dashboard and car over CAN.
- * 
- * @param sensors (Sensor**) An array of pointers to Sensor objects
- * @param numSensors (int) The number of sensors in the array
- * @param startTime (unsigned long) The time that the program started in milliseconds
- * @return None 
- */
-
 #ifndef DATACOLLECTOR_H
 #define DATACOLLECTOR_H
 
-#include "Sensor.h"
-#include "SensorData.h"
+#include <Arduino.h>
+#include <FlexCAN_T4.h>
+#include <Sensor.h>
+
+constexpr uint32_t HEALTH_CHECK_REQ_ID = 100;
+constexpr size_t MAX_BUF_SIZE = 8;
 
 class DataCollector {
-private:
-    // Attributes: sensor objects, starting time, and number of sensors
-    Sensor** sensors;
-    unsigned long timeZero;
-    int numSensors;
-    FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2;
-
-    // Global variables
-    int sendID = 0;
-    int sendLength = 0;
-    int i = 0;
-    int rawData = 0;
-    int* sendData;
-    int health;
-
-    CAN_message_t msg;
-
-
-    
-    // Read signals from sensors
-    void readData(Sensor* sensor);
-
-    // Send a signal to Car and Dashboard objects
-    void sendSignal(SensorData* sensorData);
-
-    // Send the start log command to the Car Object
-    void sendLog(bool driveState);
-
-    void runHealth();
-
-    void sendHealthReport();
-
+    uint32_t id = 0;
+    size_t numSensors = 0;
+    Sensor** sensors = nullptr;
+    FlexCAN_T4<CAN1, RX_SIZE_256>* motorCAN = nullptr;
+    FlexCAN_T4<CAN2, RX_SIZE_256>* dataCAN = nullptr;
+    CAN_message_t healthMsg;
+    bool debug = false;
+    /**
+     * Get sensor data and send over CAN line.
+     * sensor->debugPrint(CAN_messate_t) is called if debug is true.
+     * @param sensor Sensor to read from
+     */
+    void read(Sensor* sensor) const;
+    /**
+     * Get a sensors health and ability to be read form
+     * @param sensor Sensor to update the DataCollector health with
+     * @return true if sensor can be read from, false otherwise
+     */
+    static Health healthCheck(const Sensor* sensor);
 public:
-    // Constructor
-    DataCollector(Sensor** sensors, int numSensors, unsigned long startTime);
-
-    // Check sensor data and send signals
+    /** begin() must be called after initialization for CAN functionality */
+    DataCollector(uint32_t id, size_t numSensors, Sensor** sensors, bool debug = false);
+    ~DataCollector() = default; // No pointers are owned, no `delete` necessary
+    /**
+     * Poll all of the sensors given to the DataCollector.
+     * Calls `healthCheck()` if a health check request is received via CAN
+     */
     void checkSensors();
-
-    // Getters and Setters
-    void setCAN(FlexCAN_T4<CAN2, RX_SIZE_256, TX_SIZE_16> can2);
-    void resetTimeZero(unsigned long startTime);
+    /**
+     * Assigns a CAN line to read/write to/from.
+     * Must be called prior to checkSensors() or healthCheck().
+     */
+    void begin(FlexCAN_T4<CAN1, RX_SIZE_256>* motorCAN, FlexCAN_T4<CAN2, RX_SIZE_256>* dataCAN);
+    /** Sends a health check message to the CAN line */
+    void healthCheck();
 };
 
 #endif // DATACOLLECTOR_H
