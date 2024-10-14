@@ -37,7 +37,7 @@ Sensor* SENSORS[] = {
 FlexCAN_T4<CAN1, RX_SIZE_256> motorCAN;
 FlexCAN_T4<CAN2, RX_SIZE_256> dataCAN;
 
-DataCollector dc = DataCollector(ReservedIDs::DC1, NUM_SENSORS, SENSORS);
+DataCollector dc = DataCollector(ReservedIDs::DCF, NUM_SENSORS, SENSORS);
 
 constexpr uint32_t BAUD_RATE = 112500;
 
