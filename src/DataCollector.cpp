@@ -4,7 +4,7 @@
 #include "DataCollector.h"
 #include <SensorData.h>
 
-DataCollector::DataCollector(uint32_t id, size_t numSensors, Sensor** sensors, const bool debug)
+DataCollector::DataCollector(const ReservedIDs id, const size_t numSensors, Sensor** sensors, const bool debug)
 {
     this->id = id;
     this->numSensors = numSensors;
@@ -42,7 +42,7 @@ void DataCollector::healthCheck()
     {
         status[sensorIndex] = sensors[sensorIndex]->healthCheck();
     }
-    healthMsg.id = HEALTH_CHECK_REQ_ID + id;
+    healthMsg.id = static_cast<uint32_t>(id);
     healthMsg.len = numSensors;
     for (size_t statusIndex = 0; statusIndex < numSensors && statusIndex < MAX_BUF_SIZE; statusIndex++)
     {
@@ -52,7 +52,7 @@ void DataCollector::healthCheck()
 }
 
 void DataCollector::checkSensors() {
-    if (dataCAN->read(healthMsg) && healthMsg.id == HEALTH_CHECK_REQ_ID)
+    if (dataCAN->read(healthMsg) && healthMsg.id == static_cast<uint32_t>(ReservedIDs::HealthCheck))
     {
         healthCheck();
     }

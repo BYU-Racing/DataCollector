@@ -1,15 +1,15 @@
 #ifndef DATACOLLECTOR_H
 #define DATACOLLECTOR_H
 
-#include <Arduino.h>
 #include <FlexCAN_T4.h>
 #include <Sensor.h>
+#include <Reserved.h>
 
 constexpr uint32_t HEALTH_CHECK_REQ_ID = 100;
 constexpr size_t MAX_BUF_SIZE = 8;
 
 class DataCollector {
-    uint32_t id = 0;
+    ReservedIDs id = ReservedIDs::INVALID;
     size_t numSensors = 0;
     Sensor** sensors = nullptr;
     FlexCAN_T4<CAN1, RX_SIZE_256>* motorCAN = nullptr;
@@ -30,7 +30,7 @@ class DataCollector {
     static Health healthCheck(const Sensor* sensor);
 public:
     /** begin() must be called after initialization for CAN functionality */
-    DataCollector(uint32_t id, size_t numSensors, Sensor** sensors, bool debug = false);
+    DataCollector(ReservedIDs id, size_t numSensors, Sensor** sensors, bool debug = false);
     ~DataCollector() = default; // No pointers are owned, no `delete` necessary
     /**
      * Poll all of the sensors given to the DataCollector.
