@@ -42,7 +42,7 @@ void DataCollector::healthCheck()
     {
         status[sensorIndex] = sensors[sensorIndex]->healthCheck();
     }
-    healthMsg.id = static_cast<uint32_t>(id);
+    healthMsg.id = id;
     healthMsg.len = numSensors;
     for (size_t statusIndex = 0; statusIndex < numSensors && statusIndex < MAX_BUF_SIZE; statusIndex++)
     {
@@ -52,7 +52,7 @@ void DataCollector::healthCheck()
 }
 
 void DataCollector::checkSensors() {
-    if (dataCAN->read(healthMsg) && healthMsg.id == static_cast<uint32_t>(ReservedIDs::HealthCheck))
+    if (dataCAN->read(healthMsg) && healthMsg.id == ReservedIDs::HealthCheckId)
     {
         healthCheck();
     }

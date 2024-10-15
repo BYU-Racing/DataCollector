@@ -9,7 +9,7 @@ constexpr uint32_t HEALTH_CHECK_REQ_ID = 100;
 constexpr size_t MAX_BUF_SIZE = 8;
 
 class DataCollector {
-    ReservedIDs id = ReservedIDs::INVALID;
+    uint32_t id = ReservedIDs::INVALIDId;
     size_t numSensors = 0;
     Sensor** sensors = nullptr;
     FlexCAN_T4<CAN1, RX_SIZE_256>* motorCAN = nullptr;
