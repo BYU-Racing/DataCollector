@@ -6,3 +6,4 @@
 .idea
 .vscode
 **/[Mm]ain.cpp
+!examples/[Mm]ain.cpp
